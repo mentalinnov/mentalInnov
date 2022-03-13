@@ -1,0 +1,57 @@
+{
+  "name": "frontend",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "algosdk": "1.13.1",
+    "axios": "0.26.0",
+    "bootstrap": "^4.5.2",
+    "concurrently": "7.0.0",
+    "dotenv": "16.0.0",
+    "express": "4.17.3",
+    "file-saver": "2.0.5",
+    "firebase": "9.6.7",
+    "firebase-admin": "10.0.2",
+    "ibm-watson": "6.2.2",
+    "ipfs": "0.62.1",
+    "ipfs-car": "0.6.2",
+    "ipfs-core": "0.14.1",
+    "level-blockstore": "1.0.1",
+    "nodemon": "2.0.15",
+    "react": "^16.13.1",
+    "react-bootstrap": "^1.3.0",
+    "react-dom": "^16.13.1",
+    "react-redux": "7.2.6",
+    "react-router-dom": "^5.2.0",
+    "react-scripts": "4.0.3",
+    "react-timer-hook": "3.0.5",
+    "redux": "4.1.2",
+    "redux-devtools-extension": "2.13.9",
+    "redux-thunk": "2.4.1",
+    "web3.storage": "3.5.2"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "backend for mental health chatbot API",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "author": "Chaining Innovation",
+  "license": "ISC",
+  "dependencies": {
+    "express": "4.17.3",
+    "ibm-watson": "6.2.2",
+    "nodemon": "2.0.15"
+  }
+}
