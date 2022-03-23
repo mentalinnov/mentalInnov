@@ -1,6 +1,13 @@
 const express = require("express");
 const app = express();
 require("dotenv").config();
+const cors = require("cors");
+const corsOptions = {
+    "origin": "*",
+    optionsSuccessStatus: 200
+}
+//middlewares
+app.use(cors(corsOptions));
 
 // enable parsing on request bodies
 app.use(express.json());
