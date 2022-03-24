@@ -29,20 +29,71 @@ else {
 const token = process.env.REACT_APP_WEB3_STORAGE_TOKEN
 const client = new Web3Storage({ token })
 
-// wallet details
-const recoveredAccount = algosdk.mnemonicToSecretKey(process.env.REACT_APP_PASSPHRASE);
+// Create Algorand Account
+//const algosdk = require('algosdk');
+const createAccount = function() {
+  try {
+    const myaccount = algosdk.generateAccount();
+    //console.log("Account Address = " + myaccount.addr);
+    /*
+    let account_mnemonic = algosdk.secretKeyToMnemonic(myaccount.sk);
+    console.log("Account Mnemonic = "+ account_mnemonic);
+    console.log("Account created. Save off Mnemonic and address");
+    console.log("Add funds to account using the TestNet Dispenser: ");
+    console.log("https://dispenser.testnet.aws.algodev.network/ ");
+
+     */
+    return (myaccount);
+  }
+  catch (err) {
+    console.log("err", err);
+  }
+};
+
 
 // setup algod
+/*
 const baseServer = process.env.REACT_APP_ALGO_SERVER;
-const port = '';
+const port = 4001;
 const purestakeToken = {
    'X-API-Key': process.env.REACT_APP_PURESTAKE_API_KEY
 }
+
 const algodClient = new algosdk.Algodv2(purestakeToken, baseServer, port);
-const account = {
+//const algodClient = new algosdk.Algod(purestakeToken, baseServer, port);
+
+const account = createAccount();
+console.log("Account Address = " + account.addr);
+
+ */
+
+const algodToken = process.env.REACT_APP_PURESTAKE_API_KEY;
+const algodServer = process.env.REACT_APP_ALGO_SERVER;
+
+const algodPort = 4001;
+let algodClient = new algosdk.Algodv2(algodToken, algodServer, algodPort);
+
+let account_mnemonic = process.env.REACT_APP_PASSPHRASE;
+let myAccount = algosdk.mnemonicToSecretKey(account_mnemonic);
+console.log ("Algo account: " +myAccount.addr);
+//Check your balance
+const accountInfo = async () => {
+  await algodClient.accountInformation(myAccount.addr).do();
+  console.log("Account balance: %d microAlgos", accountInfo.amount);
+}
+
+
+// wallet details
+//const recoveredAccount = algosdk.mnemonicToSecretKey(process.env.REACT_APP_PASSPHRASE);
+
+//const recoveredAccount = algosdk.mnemonicToSecretKey(account.sk);
+
+/*
+    {
     addr: process.env.REACT_APP_WALLET_ADDRESS,
     sk: new Uint8Array(process.env.REACT_APP_SK.split(','))
   }
+*/
 
 export default function Dashboard() {
   const [loadingSave, setLoadingSave] = useState(false)
@@ -61,7 +112,7 @@ export default function Dashboard() {
   var chatHistory = ''
 
   // set initial timer on page load: 5 mins == 300 seconds
-  // watson assistant chat session currently lasts 5 mins on the free version 
+  // watson assistant chat session currently lasts 5 mins on the free version
   // so need to retrieve a new session ID every 5 minutes
   var time = new Date();
   time.setSeconds(time.getSeconds() + 300);
@@ -83,7 +134,7 @@ export default function Dashboard() {
     const {
       seconds,
     } = useTimer({ expiryTimestamp, onExpire: () => setTimerExpired(true) });
-  
+
     return (
       <div style={{textAlign: 'center'}}>
 
@@ -154,22 +205,41 @@ export default function Dashboard() {
     await updateDoc(userDoc, newFields);
 
     // Transaction to self with transaction note containing CID
-    let params = await algodClient.getTransactionParams().do()
-    params.fee = 1000
-    params.flatFee = true
+    let params = await algodClient.getTransactionParams().do();
+    params.fee = algosdk.ALGORAND_MIN_TX_FEE;
+    params.flatFee = true;
+
+    const receiver = myAccount.addr;
+    let amount = 0;
+    let sender = myAccount.addr;
+    let txn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
+      from: sender,
+      to: receiver,
+      amount: amount,
+      note: note,
+      suggestedParams: params
+    });
+
+    /*
     let txn = algosdk.makePaymentTxnWithSuggestedParams(
-                        process.env.REACT_APP_WALLET_ADDRESS, 
-                        process.env.REACT_APP_WALLET_ADDRESS, 
-                        0, 
+                        process.env.REACT_APP_WALLET_ADDRESS,
+                        process.env.REACT_APP_WALLET_ADDRESS,
+                        0,
                         undefined,
-                        note, 
+                        note,
                         params)
 
+     */
+
     // Sign & send transaction
-    let signedTxn = txn.signTxn(recoveredAccount.sk)
-    let txId = txn.txID().toString()
-    console.log("Signed transaction with txID: %s", txId)
-    await algodClient.sendRawTransaction(signedTxn).do()
+    //let signedTxn = txn.signTxn(recoveredAccount.sk)
+    let signedTxn = txn.signTxn(myAccount.sk);
+
+    let txId = txn.txID().toString();
+    console.log("Signed transaction with txID: %s", txId);
+
+    // Submit the transaction
+    await algodClient.sendRawTransaction(signedTxn).do();
 
     // Confirmation
     let status = await algodClient.status().do()
@@ -225,14 +295,14 @@ export default function Dashboard() {
   return (
     <Container className="fixed-top ">
       {error && <Alert variant="danger">{error}</Alert>}
-      
+
       <Provider store={store}>
         {/* <h2 className="text-right mr-3 mt-3" style={{fontSize:"22px"}}> {currentUser.email}</h2>  */}
         {/* show alert for session time */}
-        <Alert className="text-center align-items-center" show={showTimerWarning} variant='warning'> 
+        <Alert className="text-center align-items-center" show={showTimerWarning} variant='warning'>
             5 minutes have passed, a new session has been created!
         </Alert>
-        <Alert className="text-center align-items-center" show={!showTimerWarning} variant='warning'> 
+        <Alert className="text-center align-items-center" show={!showTimerWarning} variant='warning'>
             Important: chatbot sessions currently only last for 5 minutes. After that, a new session will be created.
         </Alert>
         {/* run timer */}
@@ -244,9 +314,9 @@ export default function Dashboard() {
         <div className="container">
           <Chat />
         </div>
-        
+
         {/* Save & Download buttons */}
-        <Row className="align-items-right" style={{display:'flex', justifyContent:'right'}}> 
+        <Row className="align-items-right" style={{display:'flex', justifyContent:'right'}}>
           <div className=" text-right mr-3 mt-3">
             <Button variant="outline-primary" onClick={downloadUserDetails}>
               Download user details
@@ -269,6 +339,6 @@ export default function Dashboard() {
           </div>
         </Row>
       </Provider>
-    </Container>  
+    </Container>
   )
 }

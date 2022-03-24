@@ -60,7 +60,7 @@ export default function Login() {
         Need an account? <Link to="/signup">Sign Up</Link>
       </div>
       <div className="w-100 text-center mt-2">
-        Back to <a href="https://aisenses.co" class="link-success" target="_blank">Home</a>
+        Back to <a href="https://aisenses.co" className="link-success" target="_blank">Home</a>
       </div>
     </>
   )
